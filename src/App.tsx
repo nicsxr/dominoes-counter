@@ -13,7 +13,13 @@ export default function App() {
   const online = useGame();
   const solo = useSoloGame();
 
-  const toast = mode === "solo" ? solo.toast : online.toast;
+  // Derive effective mode: if useGame auto-rejoined a room, treat as online
+  const effectiveMode =
+    mode === "none" && !online.loading && online.screen !== "lobby"
+      ? "online"
+      : mode;
+
+  const toast = effectiveMode === "solo" ? solo.toast : online.toast;
 
   function handleSoloGame(team1: string, team2: string) {
     solo.startGame(team1, team2);
@@ -30,11 +36,11 @@ export default function App() {
     online.joinRoom(name, code);
   }
 
-  const showLobby = mode === "none" || (mode === "online" && online.screen === "lobby");
+  const showLobby = effectiveMode === "none" || (effectiveMode === "online" && online.screen === "lobby");
 
   return (
     <>
-      {mode !== "solo" && online.loading ? (
+      {effectiveMode !== "solo" && online.loading ? (
         <div className="flex items-center justify-center min-h-dvh">
           <div className="w-12 h-12 border-4 border-[var(--border)] border-t-[var(--blue)] rounded-full animate-spin" />
         </div>
@@ -49,7 +55,7 @@ export default function App() {
             />
           )}
 
-          {mode === "online" && online.screen === "waiting" && online.roomCode && (
+          {effectiveMode === "online" && online.screen === "waiting" && online.roomCode && (
             <WaitingRoom
               roomCode={online.roomCode}
               onCopy={online.copyRoomCode}
@@ -57,7 +63,7 @@ export default function App() {
             />
           )}
 
-          {mode === "online" && online.screen === "game" && online.roomCode && online.selfData && online.opponentData && (
+          {effectiveMode === "online" && online.screen === "game" && online.roomCode && online.selfData && online.opponentData && (
             <GameScreen
               roomCode={online.roomCode}
               selfData={online.selfData}
@@ -69,7 +75,7 @@ export default function App() {
             />
           )}
 
-          {mode === "solo" && (
+          {effectiveMode === "solo" && (
             <SoloGameScreen
               team1={solo.team1}
               team2={solo.team2}
