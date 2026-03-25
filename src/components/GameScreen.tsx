@@ -26,15 +26,15 @@ export default function GameScreen({
     <div className="flex flex-col items-center min-h-dvh px-4 py-3 gap-0">
       {/* Header */}
       <div className="flex justify-between items-center w-full max-w-[400px] pb-2">
-        <span className="text-[13px] text-(--text-dim) bg-(--surface) px-3 py-1.5 rounded-lg">
+        <span className="text-[13px] text-[var(--text-dim)] bg-[var(--surface)] px-3 py-1.5 rounded-lg">
           Room:{" "}
-          <strong className="text-(--blue) tracking-[2px]">
+          <strong className="text-[var(--blue) tracking-[2px]">
             {roomCode}
           </strong>
         </span>
         <button
           onClick={onLeave}
-          className="bg-(--surface)] border-none text-(--text-dim)] text-lg w-9 h-9 rounded-lg cursor-pointer flex items-center justify-center transition-colors active:bg-(--red)] active:text-white"
+          className="bg-[var(--surface)] border-none text-[var(--text-dim)] text-lg w-9 h-9 rounded-lg cursor-pointer flex items-center justify-center transition-colors active:bg-[var(--red)] active:text-white"
           title="Leave room"
         >
           ✕
@@ -46,7 +46,7 @@ export default function GameScreen({
         <ScoreCard name={opponentData.name} score={opponentData.score} variant="opponent" />
 
         {/* VS */}
-        <div className="text-[13px] font-bold text-(--text-dim)] bg-(--surface)] w-9 h-9 rounded-full flex items-center justify-center shrink-0 z-10">
+        <div className="text-[13px] font-bold text-[var(--text-dim)] bg-[var(--surface)] w-9 h-9 rounded-full flex items-center justify-center shrink-0 z-10">
           VS
         </div>
 
@@ -60,14 +60,14 @@ export default function GameScreen({
             <button
               key={pts}
               onClick={() => onAddPoints(pts)}
-              className="bg-(--green)] text-white text-[22px] max-[640px]:text-[18px] font-bold py-[22px] max-[640px]:py-4 border-none rounded-[14px] cursor-pointer transition-transform active:scale-[0.93] active:bg-(--green-dark)]"
+              className="bg-[var(--green)] text-white text-[22px] max-[640px]:text-[18px] font-bold py-[22px] max-[640px]:py-4 border-none rounded-[14px] cursor-pointer transition-transform active:scale-[0.93] active:bg-[var(--green-dark)]"
             >
               +{pts}
             </button>
           ))}
           <button
             onClick={onUndo}
-            className="bg-(--orange)] text-white text-[15px] font-bold py-4 border-none rounded-xl cursor-pointer transition-transform active:scale-[0.93] active:bg-[#e68200]"
+            className="bg-[var(--orange)] text-white text-[15px] font-bold py-4 border-none rounded-xl cursor-pointer transition-transform active:scale-[0.93] active:bg-[#e68200]"
           >
             ↩ Undo
           </button>
@@ -76,7 +76,7 @@ export default function GameScreen({
           onClick={() => {
             if (window.confirm("Reset both scores to 0?")) onReset();
           }}
-          className="w-full bg-(--surface)] border-2 border-(--border)] text-(--text-dim)] text-sm font-semibold py-3 rounded-xl cursor-pointer transition-transform active:scale-[0.97] active:bg-(--surface-light)]"
+          className="w-full bg-[var(--surface)] border-2 border-[var(--border)] text-[var(--text-dim)] text-sm font-semibold py-3 rounded-xl cursor-pointer transition-transform active:scale-[0.97] active:bg-[var(--surface-light)]"
         >
           New Game
         </button>
