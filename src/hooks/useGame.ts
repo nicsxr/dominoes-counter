@@ -111,10 +111,7 @@ export function useGame() {
                 roomCode: code,
                 selfData: players[playerId] ?? prev.selfData,
                 opponentData: null,
-                screen:
-                  prev.screen === "game" || prev.screen === "waiting"
-                    ? prev.screen
-                    : "waiting",
+                screen: "waiting",
               };
             });
             return;
