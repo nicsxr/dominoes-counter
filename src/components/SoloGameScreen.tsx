@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { PlayerData } from "../lib/types";
 import ScoreCard from "./ScoreCard";
 
-const POINT_VALUES = [5, 10, 15, 20, 25, 30, 35] as const;
+const POINT_VALUES = [5, 10, 15, 20, 25, 30] as const;
 
 type TeamKey = "team1" | "team2";
 
@@ -71,7 +71,7 @@ export default function SoloGameScreen({
         <p className="text-center text-xs text-[var(--text-dim)] mb-2">
           Adding to <strong className="text-white">{selectedData.name}</strong>
         </p>
-        <div className="grid grid-cols-4 gap-2.5 mb-2.5">
+        <div className="grid grid-cols-3 gap-2.5 mb-2.5">
           {POINT_VALUES.map((pts) => (
             <button
               key={pts}
@@ -81,21 +81,25 @@ export default function SoloGameScreen({
               +{pts}
             </button>
           ))}
+        </div>
+        <div className="grid grid-cols-2 gap-2.5">
           <button
-            onClick={() => onUndo(selected)}
-            className="bg-[var(--orange)] text-white text-[15px] font-bold py-4 border-none rounded-xl cursor-pointer transition-transform active:scale-[0.93] active:bg-[#e68200]"
+            onClick={() => {
+              if (window.confirm("Reset both scores to 0?")) onReset();
+            }}
+            className="bg-[var(--surface)] border-2 border-[var(--border)] text-[var(--text-dim)] text-sm font-semibold py-3 rounded-xl cursor-pointer transition-transform active:scale-[0.97] active:bg-[var(--surface-light)]"
+          >
+            New Game
+          </button>
+          <button
+            onClick={() => {
+              if (window.confirm("Undo last score?")) onUndo(selected);
+            }}
+            className="bg-[var(--orange)] text-white text-[15px] font-bold py-3 border-none rounded-xl cursor-pointer transition-transform active:scale-[0.93] active:bg-[#e68200]"
           >
             ↩ Undo
           </button>
         </div>
-        <button
-          onClick={() => {
-            if (window.confirm("Reset both scores to 0?")) onReset();
-          }}
-          className="w-full bg-[var(--surface)] border-2 border-[var(--border)] text-[var(--text-dim)] text-sm font-semibold py-3 rounded-xl cursor-pointer transition-transform active:scale-[0.97] active:bg-[var(--surface-light)]"
-        >
-          New Game
-        </button>
       </div>
     </div>
   );
