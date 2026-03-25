@@ -36,7 +36,7 @@ export default function App() {
     <>
       {mode !== "solo" && online.loading ? (
         <div className="flex items-center justify-center min-h-dvh">
-          <div className="w-12 h-12 border-4 border-[var(--border)] border-t-[var(--blue)] rounded-full animate-spin" />
+          <div className="w-12 h-12 border-4 border-(--border)] border-t-(--blue)] rounded-full animate-spin" />
         </div>
       ) : (
         <>

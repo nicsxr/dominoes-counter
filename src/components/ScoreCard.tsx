@@ -42,7 +42,7 @@ export default function ScoreCard({ name, score, variant, selected, onClick }: S
     ? "bg-linear-to-br from-[#1a1a3e] to-[#1e1e4a] border-[#2a2a5a]"
     : "bg-linear-to-br from-[#0a2a1a] to-[#0e3a2e] border-[#1a5a3a]";
 
-  const ring = selected ? "ring-2 ring-[var(--blue)] ring-offset-2 ring-offset-[var(--bg)]" : "";
+  const ring = selected ? "ring-2 ring-(--blue)] ring-offset-2 ring-offset-(--bg)]" : "";
 
   return (
     <div
@@ -62,8 +62,8 @@ export default function ScoreCard({ name, score, variant, selected, onClick }: S
         value={score}
         className={
           isOpponent
-            ? "text-[42px] max-[640px]:text-[36px] min-[800px]:text-[52px] font-extrabold leading-none tabular-nums text-[var(--blue)]"
-            : "text-[64px] max-[640px]:text-[48px] min-[800px]:text-[80px] font-extrabold leading-none tabular-nums text-[var(--green)]"
+            ? "text-[42px] max-[640px]:text-[36px] min-[800px]:text-[52px] font-extrabold leading-none tabular-nums text-(--blue)]"
+            : "text-[64px] max-[640px]:text-[48px] min-[800px]:text-[80px] font-extrabold leading-none tabular-nums text-(--green)]"
         }
       />
     </div>
