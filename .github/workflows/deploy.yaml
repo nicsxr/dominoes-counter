@@ -39,7 +39,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_API_URL: https://api.example.com
+          VITE_API_URL: https://dominoes-counter-backend.vercel.app
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
