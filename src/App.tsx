@@ -3,9 +3,11 @@ import Lobby from "./components/Lobby";
 import WaitingRoom from "./components/WaitingRoom";
 import GameScreen from "./components/GameScreen";
 import SoloGameScreen from "./components/SoloGameScreen";
+import JoinPrompt from "./components/JoinPrompt";
 import Toast from "./components/Toast";
 import { useGame } from "./hooks/useGame";
 import { useSoloGame } from "./hooks/useSoloGame";
+import { getRoomUrl, getSavedName } from "./lib/utils";
 
 export default function App() {
   const [mode, setMode] = useState<"none" | "online" | "solo">("none");
@@ -20,6 +22,10 @@ export default function App() {
       : mode;
 
   const toast = effectiveMode === "solo" ? solo.toast : online.toast;
+
+  // Show join prompt when useGame detected a URL room code and needs a name
+  const showJoinPrompt =
+    online.pendingLinkCode !== null && !online.loading && online.onlineAvailable && !getSavedName();
 
   function handleSoloGame(team1: string, team2: string) {
     solo.startGame(team1, team2);
@@ -36,7 +42,25 @@ export default function App() {
     online.joinRoom(name, code);
   }
 
-  const showLobby = effectiveMode === "none" || (effectiveMode === "online" && online.screen === "lobby");
+  function handleLinkJoin(name: string) {
+    if (!online.pendingLinkCode) return;
+    online.joinViaLink(name);
+    setMode("online");
+  }
+
+  function handleShareLink() {
+    if (!online.roomCode) return;
+    const url = getRoomUrl(online.roomCode);
+    if (navigator.share) {
+      navigator.share({ title: "Join my Dominoes game", url });
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => online.copyRoomCode());
+    }
+  }
+
+  const showLobby =
+    !showJoinPrompt &&
+    (effectiveMode === "none" || (effectiveMode === "online" && online.screen === "lobby"));
 
   return (
     <>
@@ -46,6 +70,14 @@ export default function App() {
         </div>
       ) : (
         <>
+          {showJoinPrompt && (
+            <JoinPrompt
+              roomCode={online.pendingLinkCode!}
+              onJoin={handleLinkJoin}
+              onCancel={() => { online.clearPendingLink(); }}
+            />
+          )}
+
           {showLobby && (
             <Lobby
               onCreateRoom={handleOnlineCreate}
@@ -60,6 +92,7 @@ export default function App() {
               roomCode={online.roomCode}
               onCopy={online.copyRoomCode}
               onLeave={() => { online.leaveRoom(); setMode("none"); }}
+              onShareLink={handleShareLink}
             />
           )}
 

@@ -20,6 +20,9 @@ import {
   saveRoom,
   clearRoom,
   getSavedRoom,
+  getSavedName,
+  getRoomCodeFromUrl,
+  clearRoomFromUrl,
 } from "../lib/utils";
 
 const playerId = getPlayerId();
@@ -32,17 +35,23 @@ interface GameState {
   toast: string | null;
   loading: boolean;
   onlineAvailable: boolean;
+  pendingLinkCode: string | null;
 }
 
 export function useGame() {
-  const [state, setState] = useState<GameState>({
-    screen: "lobby",
-    roomCode: null,
-    selfData: null,
-    opponentData: null,
-    toast: null,
-    loading: true,
-    onlineAvailable: false,
+  const [state, setState] = useState<GameState>(() => {
+    const linkCode = getRoomCodeFromUrl();
+    if (linkCode) clearRoomFromUrl();
+    return {
+      screen: "lobby",
+      roomCode: null,
+      selfData: null,
+      opponentData: null,
+      toast: null,
+      loading: true,
+      onlineAvailable: false,
+      pendingLinkCode: linkCode,
+    };
   });
 
   const roomRefCurrent = useRef<ReturnType<typeof ref> | null>(null);
@@ -72,6 +81,7 @@ export function useGame() {
       toast: null,
       loading: prev.loading,
       onlineAvailable: prev.onlineAvailable,
+      pendingLinkCode: null,
     }));
   }, []);
 
@@ -139,7 +149,58 @@ export function useGame() {
         dbRef.current = db;
         setState((prev) => ({ ...prev, onlineAvailable: true }));
 
-        // Try auto-rejoin
+        // Try auto-join from URL link
+        const linkCode = state.pendingLinkCode;
+        if (linkCode) {
+          const existingName = getSavedName();
+          if (existingName) {
+            // Auto-join: user already has a name
+            setState((prev) => ({ ...prev, pendingLinkCode: null }));
+            const roomRef = ref(db, "rooms/" + linkCode);
+            const snapshot = await get(roomRef);
+            if (snapshot.exists()) {
+              const data = snapshot.val() as RoomData;
+              const players = data.players ?? {};
+              const ids = Object.keys(players);
+
+              if (ids.includes(playerId)) {
+                saveRoom(linkCode);
+                setState((prev) => ({
+                  ...prev,
+                  roomCode: linkCode,
+                  screen: ids.length < 2 ? "waiting" : "game",
+                  loading: false,
+                }));
+                listenToRoom(roomRef, linkCode);
+                return;
+              }
+
+              if (ids.length < 2) {
+                await set(ref(db, "rooms/" + linkCode + "/players/" + playerId), {
+                  name: existingName,
+                  score: 0,
+                  history: [0],
+                });
+                saveRoom(linkCode);
+                setState((prev) => ({
+                  ...prev,
+                  roomCode: linkCode,
+                  screen: "game",
+                  loading: false,
+                }));
+                listenToRoom(roomRef, linkCode);
+                return;
+              }
+
+              showToast("Room is full");
+            } else {
+              showToast("Room not found");
+            }
+          }
+          // If no name, pendingLinkCode stays set — App shows JoinPrompt
+        }
+
+        // Try auto-rejoin from session
         const savedRoom = getSavedRoom();
         if (savedRoom) {
           const roomRef = ref(db, "rooms/" + savedRoom);
@@ -362,6 +423,59 @@ export function useGame() {
     }
   }, [state.roomCode, showToast]);
 
+  const joinViaLink = useCallback(
+    async (name: string) => {
+      if (!state.pendingLinkCode || !state.onlineAvailable) return;
+      const code = state.pendingLinkCode;
+      setState((prev) => ({ ...prev, pendingLinkCode: null }));
+      saveName(name.trim());
+
+      const db = getDb();
+      const roomRef = ref(db, "rooms/" + code);
+      const snapshot = await get(roomRef);
+
+      if (!snapshot.exists()) {
+        showToast("Room not found");
+        return;
+      }
+
+      const data = snapshot.val() as RoomData;
+      const players = data.players ?? {};
+      const ids = Object.keys(players);
+
+      if (ids.includes(playerId)) {
+        saveRoom(code);
+        setState((prev) => ({
+          ...prev,
+          roomCode: code,
+          screen: ids.length < 2 ? "waiting" : "game",
+        }));
+        listenToRoom(roomRef, code);
+        return;
+      }
+
+      if (ids.length >= 2) {
+        showToast("Room is full");
+        return;
+      }
+
+      await set(ref(db, "rooms/" + code + "/players/" + playerId), {
+        name: name.trim(),
+        score: 0,
+        history: [0],
+      });
+
+      saveRoom(code);
+      setState((prev) => ({ ...prev, roomCode: code, screen: "game" }));
+      listenToRoom(roomRef, code);
+    },
+    [state.pendingLinkCode, state.onlineAvailable, showToast, listenToRoom]
+  );
+
+  const clearPendingLink = useCallback(() => {
+    setState((prev) => ({ ...prev, pendingLinkCode: null }));
+  }, []);
+
   return {
     ...state,
     createRoom,
@@ -371,5 +485,7 @@ export function useGame() {
     resetScores,
     leaveRoom,
     copyRoomCode,
+    joinViaLink,
+    clearPendingLink,
   };
 }

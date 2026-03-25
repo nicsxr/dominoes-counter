@@ -45,3 +45,19 @@ export function saveRoom(code: string) {
 export function clearRoom() {
   sessionStorage.removeItem(ROOM_KEY);
 }
+
+export function getRoomUrl(code: string): string {
+  const base = window.location.origin + window.location.pathname;
+  return base + "?room=" + encodeURIComponent(code);
+}
+
+export function getRoomCodeFromUrl(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("room")?.toUpperCase() || null;
+}
+
+export function clearRoomFromUrl() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("room");
+  window.history.replaceState({}, "", url.toString());
+}
